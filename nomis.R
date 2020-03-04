@@ -77,10 +77,12 @@ library(glue)
                     group = sex_name, colour = sex_name),
                 size = 1) +
     # sort out x axis (rotated y) 
-      # percent is e.g. 20 for 20% not 0.2 
-      # abs ie. absolute takes away +- symbol
-      # adds % symbol
-        scale_y_continuous(labels = function(x) paste0(abs(x),"%")) +
+        # put main breaks (for tick mark labels) at chosen points 
+        scale_y_continuous(breaks = c(-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10),
+         # percent is e.g. 20 for 20% not 0.2 
+         # abs ie. absolute takes away +- symbol
+         # adds % symbol
+            labels = function(x) paste0(abs(x),"%")) +
       # change label of key
     # axis labels
       labs(x = "Age group", y = "Proportion of total" ) + 
@@ -90,7 +92,8 @@ library(glue)
                                    "#FFB300")) + # m - Bolton brand yellow
     scale_fill_manual(name = "Bolton",
                       values = c("#FFB300", # f - Bolton brand yellow
-                                 "#99a89e")) # m - Bolton brand grey 
+                                 "#99a89e"))  # m - Bolton brand grey 
+
 
   #    ggplotly(myplot)
       
