@@ -98,70 +98,122 @@ library(glue)
 
       
   plot_ly() %>% 
-        # Bolton male bar - so can seperately label on legend
-        add_bars(data = age_breakdown2[age_breakdown2$geography_name == "Bolton" & 
-                                         age_breakdown2$sex_name== "Male",],
-                 x = ~ifelse(sex_name == "Male", -obs_value, obs_value), 
-                 y = ~age_name, 
-                 color = ~sex_name,
-                 orientation = 'h', 
-                 hoverinfo = 'text', 
-                  text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
-                 colors = c("#FFB300", #  - Bolton brand yellow
-                            "#99a89e"), #  - Bolton brand grey
-                 legendgroup = "Bolton",
-                 name = "Bolton male"
-                 ) %>% 
-        # Bolton female bar 
-        add_bars(data = age_breakdown2[age_breakdown2$geography_name == "Bolton" & 
-                                         age_breakdown2$sex_name== "Female",],
-                 x = ~ifelse(sex_name == "Male", -obs_value, obs_value), 
-                 y = ~age_name, 
-                 color = ~sex_name,
-                 orientation = 'h', 
-                 hoverinfo = 'text', 
-                  text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
-                 colors = c("#FFB300", #  - Bolton brand yellow
-                            "#99a89e"), #  - Bolton brand grey
-                 legendgroup = "Bolton",
-                 name = "Bolton female"
-        ) %>% 
+    # Bolton bars 
+        add_bars(data = age_breakdown2[age_breakdown2$geography_name == "Bolton",],
+      # multiply by -1 if male to separate genders
+        x = ~ifelse(sex_name == "Male", -obs_value, obs_value), 
+        y = ~age_name, 
+        color = ~sex_name,
+      # rotate bars to horizontal
+        orientation = 'h', 
+      # popup text
+        hoverinfo = 'text', 
+          text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
+        colors = c("#FFB300", #  - Bolton brand yellow
+                    "#99a89e"), #  - Bolton brand grey
+        legendgroup = "Bolton",
+      # name for legend
+        name = ~paste("Bolton", sex_name)
+         ) %>% 
+    # England male line
+        # can get the m/f lines in 2 different colours using color = ~ sex_name but then same colour as bars
+        # or manually colour, but then both lines are the same colour. 
+        # so split into m/ f lines. 
         add_paths(data = age_breakdown2[age_breakdown2$geography_name == "England" & 
-                                          age_breakdown2$sex_name== "Male" ,] %>%
-                    group_by(sex_name),
-                  color = ~sex_name, # 2 lines 
-                  x = ~ifelse(sex_name == "Male", -obs_value, obs_value),
-                  y = ~age_name,
-                  hoverinfo = 'text', 
-                    text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
-                  orientation = 'h',
-                  line = list(color="#FFB300"), # bolton brand yellow
-                  legendgroup = "England", 
-                  name = "England male"
-                  ) %>%
-        # female england line
-        add_paths(data = age_breakdown2[age_breakdown2$geography_name == "England" &
-                                          age_breakdown2$sex_name == "Female" ,] %>%
-                    group_by(sex_name),
-                  color = ~sex_name,
-                  x = ~ifelse(sex_name == "Male", -obs_value, obs_value),
-                  y = ~age_name,
-                  hoverinfo = 'text', 
-                    text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
-                  orientation = 'h',
-                  line = list(color="#99a89e"), # bolton brand grey
-                  legendgroup = "England", 
-                  name = "England female"
+                  age_breakdown2$sex_name== "Male" ,] %>%
+                  # group by so draws line linking gender not each point in order
+                  group_by(sex_name),
+          color = ~sex_name, # creates 2 lines 
+          x = ~ifelse(sex_name == "Male", -obs_value, obs_value),
+          y = ~age_name,
+        # popup text
+          hoverinfo = 'text', 
+            text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
+          orientation = 'h',
+          line = list(color="#FFB300"), # bolton brand yellow
+          legendgroup = "England", 
+        # name for legend
+          name = "England male"
         ) %>%
-        layout(bargap = 0.1, barmode = 'overlay',
-               xaxis = list(tickmode = 'array', tickvals = c(-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10),
-                            ticktext = c('10%', "8%", '6%', "4%", "2%", '0', "2%", '4%', "6%", "8%", '10%'))) %>%
-        layout(xaxis = list(title = "<b>Proportion of total</b>"), 
-               yaxis = list(title = "<b>Age group</b>"),
+    # England female line
+        add_paths(data = age_breakdown2[age_breakdown2$geography_name == "England" &
+                  age_breakdown2$sex_name == "Female" ,] %>%
+                  # group by so draws line linking gender not each point in order
+                  group_by(sex_name),
+            color = ~sex_name,
+            x = ~ifelse(sex_name == "Male", -obs_value, obs_value),
+            y = ~age_name,
+          # popup text
+            hoverinfo = 'text', 
+              text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
+            orientation = 'h',
+            line = list(color="#99a89e"), # bolton brand grey
+            legendgroup = "England", 
+          # name for legend
+            name = "England female"
+        ) %>%
+    # adjust layout of chart    
+      layout(bargap = 0.1, 
+             # stops m/ f being offset
+              barmode = 'overlay',
+            xaxis = list(title = "<b>Proportion of total</b>", 
+                         # create fake axis labelling to get rid of minus sign & add percent sign
+                           tickmode = 'array', 
+                           tickvals = c(-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10),
+                           ticktext = c('10%', "8%", '6%', "4%", "2%", '0', "2%", '4%', "6%", "8%", '10%')),
+             yaxis = list(title = "<b>Proportion of total</b>"),
+             # legend title not working
+             legend = list(title = list(text = "Title"))
+             ) 
+               
+      
+# population pyramid - plotly - simpler if don't care about colouring ###################################       
+      
+      
+      plot_ly() %>% 
+        # Bolton bars 
+        add_bars(data = age_breakdown2[age_breakdown2$geography_name == "Bolton",],
+                 # multiply by -1 if male to separate genders
+                 x = ~ifelse(sex_name == "Male", -obs_value, obs_value), 
+                 y = ~age_name, 
+                 color = ~sex_name,
+                 # rotate bars to horizontal
+                 orientation = 'h', 
+                 # popup text
+                 hoverinfo = 'text', 
+                 text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
+                 colors = c("#FFB300", #  - Bolton brand yellow
+                            "#99a89e"), #  - Bolton brand grey
+                 name = ~paste("Bolton",sex_name)
+        ) %>% 
+        # England lines
+        add_paths(data = age_breakdown2[age_breakdown2$geography_name == "England",] %>%
+                    # group by so draws line linking gender not each point in order
+                    group_by(sex_name),
+                  color = ~sex_name, # creates 2 lines but same colour as bars
+                  x = ~ifelse(sex_name == "Male", -obs_value, obs_value),
+                  y = ~age_name,
+                  # popup text
+                  hoverinfo = 'text', 
+                  text = ~glue("{geography_name} {sex_name}<br>{age_name}: <b>{abs(round(obs_value, digits = 2))}%</b>"),
+                  orientation = 'h',
+                  line = list(color=("black")),
+                  # hide on legend as both the same colour anyway, 
+                  # does mean you can't take it off chart using legend tho
+                  showlegend = FALSE 
+                  ) %>%
+      # adjust layout of chart    
+        layout(bargap = 0.1, 
+               # stops m/ f being offset
+               barmode = 'overlay',
+               xaxis = list(title = "<b>Proportion of total</b>", 
+                            # create fake axis labelling to get rid of minus sign & add percent sign
+                            tickmode = 'array', 
+                            tickvals = c(-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10),
+                            ticktext = c('10%', "8%", '6%', "4%", "2%", '0', "2%", '4%', "6%", "8%", '10%')),
+               yaxis = list(title = "<b>Proportion of total</b>"),
                # legend title not working
-               legend = list(title = list(text = "Tree")
-                             )
-               )
-        
+               legend = list(title = list(text = "Title"))
+        )         
         
 
